@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "defect-mlff"
+version = "0.1.0"
+description = "Toolkit to sample defect configurations and generate AIMs/VASP inputs for MLFF workflows."
+readme = "README"
+requires-python = ">=3.9"
+dependencies = [
+  "numpy",
+  # AIMs support requires a recent pymatgen build with pymatgen.io.aims
+  "pymatgen>=2024.5.1",
+  "ase",
+  "tqdm",
+  "scikit-learn",
+  "dscribe",
+  "typeguard",
+  "pyyaml",
+]
+
+[project.scripts]
+defect-mlff = "cli.generate:main"
+defect-mlff-diversify = "cli.diversify:main"
+defect-mlff-generate = "cli.generate:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+namespaces = false

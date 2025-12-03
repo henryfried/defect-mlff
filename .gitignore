@@ -1,0 +1,44 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*.so
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+.conda/
+
+# Editors/OS
+.DS_Store
+*.swp
+*.swo
+.idea/
+.vscode/
+
+# Testing
+.pytest_cache/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Generated outputs
+outputs/
+plots/
+files/
+
+# Local scratch space (daily scripts, throwaway runs)
+local_scripts/
+evaluation
+
+# Coverage
+.coverage
+coverage.xml
+htmlcov/
+.nox/
+
+.test*
+./examples*

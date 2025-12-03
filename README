@@ -1,0 +1,39 @@
+defect-mlff
+===========
+
+Toolkit to sample and diversify defect configurations, generate VASP/FHI-aims inputs, and prepare MLFF/MACE datasets.
+
+Install
+-------
+```
+pip install -e .
+```
+This exposes CLIs:
+- `defect-mlff-diversify` → sample configurations.
+- `defect-mlff-generate` → write AIMs/VASP inputs.
+  - `defect-mlff-generate write-aims ...`
+  - `defect-mlff-generate write-vasp ...`
+
+Quick start
+-----------
+- Sample configs from a JSON/YAML spec:
+  ```
+  defect-mlff-diversify --configs path/to/sample_config.yaml
+  ```
+- Write AIMs inputs from a config list (first 10 entries):
+  ```
+  defect-mlff-generate write-aims \
+    --config outputs/.../jsons/0_V_Mo.json \
+    --k 10 \
+    --output-dir outputs/.../relax \
+    --defaults /path/to/fhi-aims/defaults_2020
+  ```
+- Write VASP inputs for a single config:
+  ```
+  defect-mlff-generate write-vasp \
+    --config outputs/.../jsons/0_V_Mo.json \
+    --config-index 0 \
+    --template-dir inputs/vasp \
+    --output-dir outputs/.../vasp_relax
+  ```
+  ```
