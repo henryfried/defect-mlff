@@ -191,11 +191,19 @@ class DisplacementConfigSampler:
         self,
         struct_path: str,
         displacement: float,
+        defect_pos_cart: Optional[List[List[float]]] = None,
+        defect_radius: Optional[float] = None,
+        inner_weight: float = 1.0,
+        outer_weight: float = 0.2,
         seed: int = 42,
     ):
         self.struct_path = Path(struct_path)
         self.structure = self._load_structure(self.struct_path)
         self.displ = displacement
+        self.defect_pos_cart = self._normalize_defect_pos(defect_pos_cart)
+        self.defect_radius = defect_radius
+        self.inner_weight = inner_weight
+        self.outer_weight = outer_weight
         self.rng = np.random.default_rng(seed)
 
     def _load_structure(self, path: Path) -> Structure:
@@ -208,10 +216,36 @@ class DisplacementConfigSampler:
             geom = AimsGeometryIn.from_file(str(path))
             return geom.structure
         return Structure.from_file(str(path))
-        
+
+    @staticmethod
+    def _normalize_defect_pos(
+        defect_pos_cart: Optional[List[List[float]]]
+    ) -> Optional[List[np.ndarray]]:
+        if defect_pos_cart is None:
+            return None
+        if len(defect_pos_cart) == 3 and isinstance(defect_pos_cart[0], (int, float)):
+            return [np.array(defect_pos_cart, dtype=float)]
+        return [np.array(p, dtype=float) for p in defect_pos_cart]
+
+    def _compute_site_weights(self, structure: Structure) -> np.ndarray:
+        if not self.defect_pos_cart:
+            return np.ones(len(structure), dtype=float)
+        if self.defect_radius is None:
+            raise ValueError("defect_radius must be set when defect_pos_cart is provided.")
+
+        frac_sites = structure.frac_coords
+        frac_defects = np.array(
+            [structure.lattice.get_fractional_coords(p) for p in self.defect_pos_cart]
+        )
+        dists = structure.lattice.get_all_distances(frac_sites, frac_defects)
+        min_dists = np.min(dists, axis=1)
+        return np.where(min_dists <= self.defect_radius, self.inner_weight, self.outer_weight)
+
     def random_noise(self, structure):
+        weights = self._compute_site_weights(structure)
         for site_index in range(len(structure)):
             displ = self.rng.normal(0.0, self.displ, size=3)
+            displ *= weights[site_index]
             structure.translate_sites(site_index, displ, frac_coords=False)
         return structure
     
@@ -225,6 +259,12 @@ class DisplacementConfigSampler:
             displ_data = {
                 "config": count,
                 "structure": struct.as_dict(),
+                "defect_radius": self.defect_radius,
+                "inner_weight": self.inner_weight,
+                "outer_weight": self.outer_weight,
+                "defect_pos_cart": None
+                if self.defect_pos_cart is None
+                else [p.tolist() for p in self.defect_pos_cart],
                 }
             all_displ.append(displ_data)
         return all_displ
@@ -237,7 +277,7 @@ class DisplacementConfigSampler:
         """
         Write configurations to JSON, naming file by defect parameters.
         """
-        out_path = os.path.join(output_dir, f"displacement.json")
+        out_path = os.path.join(output_dir, f"displacements.json")
         with open(out_path, "w") as fp:
             json.dump(all_displ, fp, indent=2)
         logger.info(f"Wrote {len(all_displ)} configs to {out_path}.") 
