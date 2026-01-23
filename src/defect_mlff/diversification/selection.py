@@ -41,7 +41,7 @@ def greedy_maxmin_from_distance(D, k, start="pair", rng=None) -> List[int]:
     dmin = np.minimum(D[:, i0], D[:, i1])
     dmin[selected] = -np.inf  # do NOT reselect already-picked indices
 
-    for _ in range(1, k):
+    while len(selected) < k:
         nxt = int(np.argmax(dmin))          # farthest (max of closest distances)
         selected.append(nxt)
         dmin = np.minimum(dmin, D[:, nxt])  # update with one new column
@@ -63,7 +63,7 @@ def greedy_min_max(features, k, seed, metric="euclidean") -> List[int]:
     selected = [first]
     D = pairwise_distances(features, metric=metric)
     min_dists = D[first].copy()
-    for _ in range(1, k):
+    while len(selected) < k:
         next_idx = int(np.argmax(min_dists))
         selected.append(next_idx)
         min_dists = np.minimum(min_dists, D[next_idx])

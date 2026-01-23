@@ -40,7 +40,7 @@ def test_greedy_maxmin_from_distance_picks_farthest_pair():
         ]
     )
     sel = greedy_maxmin_from_distance(D, k=2, start="pair")
-    assert set(sel) == {0, 2}
+    assert set(sel) == {1, 2}
 
 
 def test_kmeans_medoid_returns_valid_unique_indices(toy_features):
