@@ -45,7 +45,10 @@ class DefectConfigSampler:
         return Structure.from_file(str(path))
 
     def _generate_structure(
-        self, seed: int, layer: Optional[str] = None,
+        self,
+        seed: int,
+        layer: Optional[str] = None,
+        avoid_vertical_pairs: bool = False,
     ) -> Tuple[Structure, List[List[int]], PymatgenPOSCARDefectGenerator]:
         """
         Generate a defected structure and record defect site indices.
@@ -55,7 +58,11 @@ class DefectConfigSampler:
         )
         defect_indices = [
             generator.introduce_defects(
-                self.defect_types[i], self.defect_species[i],  self.n_defects[i], layer
+                self.defect_types[i],
+                self.defect_species[i],
+                self.n_defects[i],
+                layer,
+                avoid_vertical_pairs=avoid_vertical_pairs,
             )
             for i in range(len(self.defect_types))
         ]
@@ -83,7 +90,8 @@ class DefectConfigSampler:
         n_configs: int = 50,
         require_unique: bool = True,
         descriptor_model: Optional[str] = None,
-        layer: Optional[str] = None
+        layer: Optional[str] = None,
+        avoid_vertical_pairs: bool = False,
     ) -> List[Dict[str, Any]]:
         """
         Generate defect configurations, distance buckets, and optional descriptors.
@@ -96,6 +104,8 @@ class DefectConfigSampler:
             Skip duplicates based on distance fingerprint.
         descriptor_model : Optional[str]
             Path to MACE model file, or None to skip descriptors.
+        avoid_vertical_pairs : bool
+            If True (and layer is None), avoid placing vacancies in vertical pairs.
 
         Returns
         -------
@@ -126,7 +136,9 @@ class DefectConfigSampler:
         while count < n_configs:
             trial += 1
             seed *= trial
-            struct, defect_indices, gen = self._generate_structure(seed, layer)
+            struct, defect_indices, gen = self._generate_structure(
+                seed, layer, avoid_vertical_pairs=avoid_vertical_pairs
+            )
             dists = get_distances_by_bucket(defect_indices, struct)
 
             key = tuple(tuple(dists[k]) for k in sorted(dists.keys()))
