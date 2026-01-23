@@ -79,6 +79,7 @@ class DefectConfigSampler:
 
     def sample_configs(
         self,
+        seed: int = 42,
         n_configs: int = 50,
         require_unique: bool = True,
         descriptor_model: Optional[str] = None,
@@ -124,7 +125,7 @@ class DefectConfigSampler:
 
         while count < n_configs:
             trial += 1
-            seed = 42 * trial
+            seed *= trial
             struct, defect_indices, gen = self._generate_structure(seed, layer)
             dists = get_distances_by_bucket(defect_indices, struct)
 
@@ -188,13 +189,25 @@ class DisplacementConfigSampler:
     """
     def __init__(
         self,
-        struct_path: dict,
+        struct_path: str,
         displacement: float,
         seed: int = 42,
     ):
-        self.structure = Structure.from_file(struct_path)
+        self.struct_path = Path(struct_path)
+        self.structure = self._load_structure(self.struct_path)
         self.displ = displacement
         self.rng = np.random.default_rng(seed)
+
+    def _load_structure(self, path: Path) -> Structure:
+        name = path.name.lower()
+        if name == "geometry.in" or path.suffix.lower() == ".in":
+            try:
+                from pymatgen.io.aims.inputs import AimsGeometryIn
+            except ImportError as exc:
+                raise RuntimeError("Reading FHI-aims geometries requires pymatgen's aims support.") from exc
+            geom = AimsGeometryIn.from_file(str(path))
+            return geom.structure
+        return Structure.from_file(str(path))
         
     def random_noise(self, structure):
         for site_index in range(len(structure)):
