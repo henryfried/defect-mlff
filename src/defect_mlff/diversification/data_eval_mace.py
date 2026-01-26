@@ -29,6 +29,12 @@ class DataEqualityDisplacementMACE:
         metric: str = "euclidean",
         defect_pos_cart: Optional[Sequence[Sequence[float]]] = None,
         defect_radius: Optional[float] = None,
+        use_rematch: bool = False,
+        rematch_metric: str = "rbf",
+        rematch_gamma: float = 1.0,
+        rematch_alpha: float = 1.0,
+        rematch_threshold: float = 1e-6,
+        rematch_normalize_kernel: bool = True,
         **kwargs,
     ) -> None:
         if json_path:
@@ -60,18 +66,44 @@ class DataEqualityDisplacementMACE:
                 ase_atoms, invariants_only=invariants_only, num_layers=num_layers
             )
             desc = self._filter_by_defect_radius(desc, struct)
-            vec = self._pool_descriptors(desc, pool)
-            descs.append(vec)
+            descs.append(desc)
 
-        if descs:
-            features = np.vstack(descs)
+        if not descs:
+            self.features = np.empty((0, 0))
+            self.K = np.empty((0, 0))
+            self.X = np.empty((0, 0))
+            return
+
+        if use_rematch:
+            try:
+                from dscribe.kernels import REMatchKernel
+            except ImportError as exc:
+                raise RuntimeError("REMatchKernel not available: install dscribe to use REMatch.") from exc
+
+            self.features = descs
+            re = REMatchKernel(
+                metric=rematch_metric,
+                gamma=rematch_gamma,
+                alpha=rematch_alpha,
+                threshold=rematch_threshold,
+                normalize_kernel=rematch_normalize_kernel,
+            )
+            K = re.create(descs)
+            self.K = 0.5 * (K + K.T)
+            if rematch_normalize_kernel:
+                self.X = np.sqrt(np.clip(2 - 2 * self.K, 0, None))
+            else:
+                diag = np.diag(self.K)
+                self.X = np.sqrt(
+                    np.clip(diag[:, None] + diag[None, :] - 2 * self.K, 0, None)
+                )
+        else:
+            features = np.vstack([self._pool_descriptors(d, pool) for d in descs])
             if normalize:
                 features = sk_normalize(features, norm="l2")
             self.features = features
+            self.K = None
             self.X = pairwise_distances(features, metric=metric)
-        else:
-            self.features = np.empty((0, 0))
-            self.X = np.empty((0, 0))
 
     @staticmethod
     def load_displaced(json_path: str) -> List[Structure]:
