@@ -284,12 +284,16 @@ class DisplacementConfigSampler:
     def write_displ(
         self,
         output_dir: str,
-        all_displ: List[Dict[str, Any]]
+        all_displ: List[Dict[str, Any]],
+        num_displ: Optional[int] = None,
     ) -> None:
         """
         Write configurations to JSON, naming file by defect parameters.
         """
-        out_path = os.path.join(output_dir, f"displacements.json")
+        if num_displ is not None:
+            out_path = os.path.join(output_dir, f"displacements_num_displ_{num_displ}.json")
+        else:
+            out_path = os.path.join(output_dir, f"displacements.json")
         with open(out_path, "w") as fp:
             json.dump(all_displ, fp, indent=2)
         logger.info(f"Wrote {len(all_displ)} configs to {out_path}.") 
