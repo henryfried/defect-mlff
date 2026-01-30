@@ -98,7 +98,24 @@ class DataEqualityDisplacementMACE:
                     np.clip(diag[:, None] + diag[None, :] - 2 * self.K, 0, None)
                 )
         else:
-            features = np.vstack([self._pool_descriptors(d, pool) for d in descs])
+            pooled = [self._pool_descriptors(d, pool) for d in descs]
+            if pool == "flatten":
+                lengths = [p.size for p in pooled]
+                max_len = max(lengths)
+                if any(l != max_len for l in lengths):
+                    logger.warning(
+                        "Flattened descriptors have variable lengths (min=%d, max=%d); "
+                        "padding with zeros to max length.",
+                        min(lengths),
+                        max_len,
+                    )
+                    features = np.zeros((len(pooled), max_len), dtype=float)
+                    for i, arr in enumerate(pooled):
+                        features[i, : arr.size] = arr
+                else:
+                    features = np.vstack(pooled)
+            else:
+                features = np.vstack(pooled)
             if normalize:
                 features = sk_normalize(features, norm="l2")
             self.features = features
