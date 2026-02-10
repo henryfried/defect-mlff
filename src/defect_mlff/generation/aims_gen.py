@@ -83,8 +83,8 @@ class AimsInputs:
         on sites within mag_cutoff Å of the defect center(s), with moment 'mag_seed'.
         """
         r = preset.lower().strip()
-        if r not in {"relax", "relax_cell", "scf"}:
-            raise ValueError("preset must be one of: 'relax', 'relax_cell', 'scf'")
+        if r not in {"relax", "relax_cell", "scf", "dfpt"}:
+            raise ValueError("preset must be one of: 'relax', 'relax_cell', 'scf', 'dfpt'")
 
         # Defaults for control.in (pymatgen uses FHI-aims tag names)
         defaults_root = Path(defaults_2020)
@@ -116,6 +116,14 @@ class AimsInputs:
             user_params.update(relax_geometry="bfgs 0.001", relax_unit_cell="none")
         elif r == "relax_cell":
             user_params.update(relax_geometry="bfgs 0.001", relax_unit_cell="full")
+        elif r == "dfpt":
+            user_params.update(
+                {
+                    "dfpt_mixing": 0.4,
+                    "DFPT dielectric": "",
+                    "dfpt_sc_accuracy_dm": 1e-5,
+                }
+            )
 
         if params:
             user_params.update(params)
