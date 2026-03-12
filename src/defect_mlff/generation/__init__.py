@@ -15,9 +15,20 @@ try:
 except ModuleNotFoundError:
     AimsInputs = None  # type: ignore
 
+# Phonopy support is optional; avoid import errors when phonopy is not installed.
+try:
+    from .phonons import PhononCalculator, atoms_to_phonopy, phonopy_to_ase  # type: ignore
+except ModuleNotFoundError:
+    PhononCalculator = None  # type: ignore
+    atoms_to_phonopy = None  # type: ignore
+    phonopy_to_ase = None  # type: ignore
+
 __all__ = [
     "get_distances_by_bucket",
     "PymatgenPOSCARDefectGenerator",
     "VaspInputs",
     "AimsInputs",
+    "PhononCalculator",
+    "atoms_to_phonopy",
+    "phonopy_to_ase",
 ]
