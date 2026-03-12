@@ -111,6 +111,7 @@ class AimsInputs:
             "compute_forces": ".true.",
             "species_dir": species_dir,
             "occupation_type":  "gaussian 0.01",
+            "final_forces_cleaned": True,
         }
         if r == "relax":
             user_params.update(relax_geometry="bfgs 0.001", relax_unit_cell="none")
@@ -119,9 +120,9 @@ class AimsInputs:
         elif r == "dfpt":
             user_params.update(
                 {
-                    "dfpt_mixing": 0.4,
+                    "dfpt_mixing": 0.2,
                     "DFPT dielectric": "",
-                    "dfpt_sc_accuracy_dm": 1e-5,
+                    "dfpt_sc_accuracy_dm": 1e-6,
                 }
             )
 

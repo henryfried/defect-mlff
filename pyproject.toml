@@ -18,6 +18,7 @@ dependencies = [
   "dscribe",
   "typeguard",
   "pyyaml",
+  "phonopy",
 ]
 
 [project.scripts]
