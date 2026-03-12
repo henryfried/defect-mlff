@@ -35,10 +35,11 @@ def atoms_to_phonopy(atoms: "Atoms"):
 def phonopy_to_ase(ph_atoms, pbc: bool = True) -> "Atoms":
     """Convert PhonopyAtoms to ASE Atoms."""
     from ase import Atoms
+    # Use property-based API — getter methods are absent in some phonopy versions
     return Atoms(
-        symbols=ph_atoms.get_chemical_symbols(),
-        cell=ph_atoms.get_cell(),
-        scaled_positions=ph_atoms.get_scaled_positions(),
+        symbols=list(ph_atoms.symbols),
+        cell=np.array(ph_atoms.cell),
+        scaled_positions=np.array(ph_atoms.scaled_positions),
         pbc=pbc,
     )
 
