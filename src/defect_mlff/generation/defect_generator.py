@@ -95,8 +95,8 @@ class PymatgenPOSCARDefectGenerator:
 
         :param defect_type: 'V' for vacancy, 'Sub' for substitution, 'As' for antisite, '2V' for vertical double vacancy.
         :param defect_species:
-            - ['X']       → remove X sites (vacancy)
-            - ['X','Y']   → replace X with Y (substitution/antisite)
+            - ['X']       -> remove X sites (vacancy)
+            - ['X','Y']   -> replace X with Y (substitution/antisite)
         :param n: Number of defects to introduce (e.g., n=2 for a double vacancy).
         :param layer: Optional layer filter ("top" or "bottom") for selecting
                     sites by fractional z coordinate.
@@ -128,7 +128,7 @@ class PymatgenPOSCARDefectGenerator:
         # Select and apply defects
         if defect_type == "V":
             if avoid_vertical_pairs and layer is None:
-                # Group candidate sites by (x,y) key → one group per vertical column
+                # Group candidate sites by (x,y) key -> one group per vertical column
                 top_candidates = self.find_defect_candidates(host_symbol, layer="top")
                 chosen_tmp = random.sample(top_candidates, n)
                 pairs = [self.get_vertical_partner(i)[0] for i in chosen_tmp]

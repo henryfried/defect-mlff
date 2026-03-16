@@ -1,9 +1,9 @@
 # generation/__init__.py
 
-# ─── Distance utilities ───────────────────────────────────────────────────────
+# --- Distance utilities -------------------------------------------------------
 from .distances import get_distances_by_bucket
 
-# ─── Defect generators & VASP I/O ─────────────────────────────────────────────
+# --- Defect generators & VASP I/O ---------------------------------------------
 from .defect_generator import (
     PymatgenPOSCARDefectGenerator,
 )
@@ -23,6 +23,8 @@ except ModuleNotFoundError:
     atoms_to_phonopy = None  # type: ignore
     phonopy_to_ase = None  # type: ignore
 
+from .raman import RamanModeSelector
+
 __all__ = [
     "get_distances_by_bucket",
     "PymatgenPOSCARDefectGenerator",
@@ -31,4 +33,5 @@ __all__ = [
     "PhononCalculator",
     "atoms_to_phonopy",
     "phonopy_to_ase",
+    "RamanModeSelector",
 ]

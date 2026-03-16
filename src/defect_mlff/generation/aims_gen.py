@@ -80,7 +80,7 @@ class AimsInputs:
         Writes control.in (+ geometry.in) using pymatgen AimsInputSet.
 
         If params['spin'] == 'collinear' and defect_pos_cart is provided, seeds 'magmom'
-        on sites within mag_cutoff Å of the defect center(s), with moment 'mag_seed'.
+        on sites within mag_cutoff Ang of the defect center(s), with moment 'mag_seed'.
         """
         r = preset.lower().strip()
         if r not in {"relax", "relax_cell", "scf", "dfpt"}:
@@ -136,12 +136,12 @@ class AimsInputs:
         if spin_mode == "collinear":
             if defect_pos_cart is None:
                 log.warning(
-                    "spin='collinear' but no defect_pos_cart provided → skipping magmom seeding."
+                    "spin='collinear' but no defect_pos_cart provided - skipping magmom seeding."
                 )
             else:
                 user_params.setdefault("default_initial_moment", [0, 0, 0])
                 log.info(
-                    "Seeding magmoms: seed=%.2f µB, cutoff=%.2f Å, only_element=%s",
+                    "Seeding magmoms: seed=%.2f muB, cutoff=%.2f Ang, only_element=%s",
                     mag_seed, mag_cutoff, only_element,
                 )
                 structs_mut = [
@@ -187,7 +187,10 @@ class AimsInputs:
             geom_path.unlink(missing_ok=True)
 
             geom = AimsGeometryIn.from_structure(struct)
-            geom.write_file(directory=target_path)
+            # Write content directly to avoid pymatgen version-specific write_file API
+            # (older builds called self.get_header() which was removed in newer versions)
+            geom_content = geom.content if hasattr(geom, "content") else str(geom)
+            geom_path.write_text(geom_content)
 
             atom_lines = 0
             if geom_path.exists():
@@ -213,7 +216,7 @@ class AimsInputs:
             out_dirs.append(self.out_path)
             return out_dirs
 
-        # Multiple structures → numbered subfolders
+        # Multiple structures -> numbered subfolders
         for i, s in enumerate(structs_mut):
             sub = self.out_path / f"frame_{i:03d}"
             sub.mkdir(parents=True, exist_ok=True)
@@ -242,7 +245,7 @@ class AimsInputs:
         apply_defects : bool, default False
             If True, pass defect metadata through so the writer applies defects
             to a *pristine* structure. If False (default), DO NOT pass defect
-            metadata—assume the provided structure(s) are already defected.
+            metadata - assume the provided structure(s) are already defected.
 
         Any additional kwargs are passed to `write_aims_inputs_for_structures`.
         """
@@ -284,12 +287,12 @@ class AimsInputs:
         ----------
         s : Structure
             Pymatgen Structure (modified in-place and also returned).
-        defect_pos_cart : [x,y,z] or list of such points (Å)
-            Defect center(s) in Cartesian Å.
+        defect_pos_cart : [x,y,z] or list of such points (Ang)
+            Defect center(s) in Cartesian Ang.
         cutoff : float
-            Neighbor cutoff radius (Å).
+            Neighbor cutoff radius (Ang).
         seed : float
-            Moment (µB) to assign to neighbors.
+            Moment (muB) to assign to neighbors.
         only_element : str | None
             If set, only seed atoms with this element symbol.
 

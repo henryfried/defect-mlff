@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 log = logging.getLogger(__name__)
 
 
-# ── ASE ↔ Phonopy conversion helpers ──────────────────────────────────────────
+# --- ASE <-> Phonopy conversion helpers ---------------------------------------
 
 def atoms_to_phonopy(atoms: "Atoms"):
     """Convert ASE Atoms to PhonopyAtoms."""
@@ -35,7 +35,7 @@ def atoms_to_phonopy(atoms: "Atoms"):
 def phonopy_to_ase(ph_atoms, pbc: bool = True) -> "Atoms":
     """Convert PhonopyAtoms to ASE Atoms."""
     from ase import Atoms
-    # Use property-based API — getter methods are absent in some phonopy versions
+    # Use property-based API - getter methods are absent in some phonopy versions
     return Atoms(
         symbols=list(ph_atoms.symbols),
         cell=np.array(ph_atoms.cell),
@@ -44,14 +44,14 @@ def phonopy_to_ase(ph_atoms, pbc: bool = True) -> "Atoms":
     )
 
 
-# ── Main class ─────────────────────────────────────────────────────────────────
+# --- Main class ---------------------------------------------------------------
 
 class PhononCalculator:
     """
     Gamma-point phonon calculation for periodic structures via Phonopy.
 
     Computes finite-difference force constants and diagonalises the
-    dynamical matrix at q=Γ to obtain mass-weighted eigenvectors.
+    dynamical matrix at q=Gamma to obtain mass-weighted eigenvectors.
     Eigenvectors are robust to small force errors and are the correct
     input for mode-targeted displacement generation.
 
@@ -60,7 +60,7 @@ class PhononCalculator:
     calc :
         Any ASE-compatible calculator (e.g. MACECalculator).
     displacement : float
-        Finite-difference displacement amplitude in Å (default 0.01).
+        Finite-difference displacement amplitude in Ang (default 0.01).
     n_acoustic : int
         Number of acoustic modes to skip when reporting optical statistics
         (default 3 for a 3D periodic system).
@@ -162,11 +162,11 @@ class PhononCalculator:
         -------
         dict
             Summary with keys: config, n_modes, n_optical, n_imaginary,
-            and frequency range in THz, cm⁻¹, and eV.
+            and frequency range in THz, cm^-1, and eV.
         """
         # Unit conversion factors from THz
-        THZ_TO_CM1 = 33.3564   # 1 THz = 33.3564 cm⁻¹
-        THZ_TO_EV  = 4.13567e-3  # 1 THz = h·1THz in eV
+        THZ_TO_CM1 = 33.3564   # 1 THz = 33.3564 cm^-1
+        THZ_TO_EV  = 4.13567e-3  # 1 THz = h*1THz in eV
 
         output_dir = Path(output_dir)
         output_dir.mkdir(parents=True, exist_ok=True)
@@ -195,7 +195,7 @@ class PhononCalculator:
 
         log.info(
             "%s: %d optical modes, %d imaginary, "
-            "freq range [%.1f, %.1f] cm⁻¹  ([%.3f, %.3f] eV)",
+            "freq range [%.1f, %.1f] cm^-1  ([%.3f, %.3f] eV)",
             config_name, n_optical, n_imaginary,
             freq_min_thz * THZ_TO_CM1, freq_max_thz * THZ_TO_CM1,
             freq_min_thz * THZ_TO_EV,  freq_max_thz * THZ_TO_EV,

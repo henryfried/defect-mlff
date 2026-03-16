@@ -146,7 +146,7 @@ class DataEqualityDisplacement:
         )
 
         # Build similarity (kernel) matrix now
-        self.X = self.build_similarity_matrix(self.structures)  # X is K (N×N)
+        self.X = self.build_similarity_matrix(self.structures)  # X is K (NxN)
 
     @staticmethod
     def load_displaced(json_path: str) -> List[Structure]:
@@ -172,7 +172,7 @@ class DataEqualityDisplacement:
 
 class DataEqualityDisplacementManual:
     """
-    Build Δr and angular histograms for displaced structures relative to a reference,
+    Build dr and angular histograms for displaced structures relative to a reference,
     using a fixed neighbor list. Captures radial and directional changes per structure.
     """
 
@@ -183,7 +183,7 @@ class DataEqualityDisplacementManual:
         json_path: Optional[str] = None,
         configs: Optional[Iterable[Structure]] = None,
         r_cutoff: float = 3.5,
-        bins: int = 21,            # prefer odd → centered at 0
+        bins: int = 21,            # prefer odd -> centered at 0
         density: bool = True,
         delta_range: Optional[Tuple[float, float]] = None,  # e.g., (-0.06, 0.06)
     ) -> None:
@@ -209,7 +209,7 @@ class DataEqualityDisplacementManual:
         self.edges = self._delta_edges(self.ref, self.structures, self.pairs, bins, delta_range)
         self.cos_edges = np.linspace(-1.0, 1.0, 13)  # fixed 12 bins, centered at 0
 
-        # Feature matrix X (K × (nbins_dr + nbins_cos))
+        # Feature matrix X (K x (nbins_dr + nbins_cos))
         self.X = self.build_feature_matrix(self.structures, self.edges, self.cos_edges, density)
 
     @staticmethod
@@ -229,7 +229,7 @@ class DataEqualityDisplacementManual:
         l_max: int = 3,
         sigma: float = 0.6,
         periodic: bool = True,
-        average: Optional[str] = "off",   # "outer" → per-structure vector; None → per-atom
+        average: Optional[str] = "off",   # "outer" -> per-structure vector; None -> per-atom
         normalize: bool = False,
     ):
         """
@@ -242,8 +242,8 @@ class DataEqualityDisplacementManual:
         rcut, nmax, lmax, sigma, periodic : SOAP hyperparameters (DScribe).
             Choose to roughly match your planned MACE cutoff/resolution.
         average : {"outer", None}
-            - "outer": per-structure SOAP (atom-averaged) → 1D vector
-            - None: per-atom SOAP → (N_atoms, n_features)
+            - "outer": per-structure SOAP (atom-averaged) -> 1D vector
+            - None: per-atom SOAP -> (N_atoms, n_features)
         normalize : bool
             L2-normalize the returned vector(s) (recommended before distances/FPS).
 
@@ -328,7 +328,7 @@ class DataEqualityDisplacementManual:
         return dm[self.pairs[:, 0], self.pairs[:, 1]]
 
     def _pair_delta_vectors(self, struct: Structure) -> np.ndarray:
-        """Return Δv_ij = v_ij(struct) - v_ij(ref) for each pair, in cartesian coords.
+        """Return dv_ij = v_ij(struct) - v_ij(ref) for each pair, in cartesian coords.
         Uses the same images from the reference neighbor list to maintain consistency.
         """
         f = struct.frac_coords
@@ -373,11 +373,11 @@ class DataEqualityDisplacementManual:
     def build_feature_matrix(self, structs: Iterable[Structure], dr_edges: np.ndarray, cos_edges: np.ndarray, density: bool) -> np.ndarray:
         rows = []
         for s in structs:
-            # Δr histogram
+            # dr histogram
             dr = self._pair_distances(s) - self.r0
             # h_dr, _ = np.histogram(dr, bins=dr_edges, density=density)
 
-            # Direction-cosine histogram (weighted by |Δv| to suppress noise)
+            # Direction-cosine histogram (weighted by |dv| to suppress noise)
             dv = self._pair_delta_vectors(s)
             mag = np.linalg.norm(dv, axis=1)
             # avoid division by zero
@@ -387,7 +387,7 @@ class DataEqualityDisplacementManual:
           #  weights = mag  # weight by magnitude
             # h_cos, _ = np.histogram(cos, bins=cos_edges, weights=weights, density=False)
             # if density:
-            h_dr  = self._prob_hist(dr,  dr_edges)               # L1-normalized Δr histogram
+            h_dr  = self._prob_hist(dr,  dr_edges)               # L1-normalized dr histogram
             h_cos = self.spherical_fingerprint(s)
             soap = self.calc_soap(s)
             rows.append(np.concatenate([h_dr, h_cos, soap]))
@@ -398,10 +398,10 @@ class DataEqualityDisplacementManual:
 
 
     def angle_change_hist(self, struct: Structure, bins: int = 12, density: bool = True, edges: Optional[np.ndarray] = None) -> np.ndarray:
-        """Histogram of bond-direction change cosΔθ = ê·ê0 for the current structure.
+        """Histogram of bond-direction change cos(dtheta) = e_hat * e_hat0 for the current structure.
 
-        ê0: unit bond vectors in the reference (precomputed)
-        ê:  unit bond vectors in the given structure (using the SAME images as ref)
+        e_hat0: unit bond vectors in the reference (precomputed)
+        e_hat:  unit bond vectors in the given structure (using the SAME images as ref)
 
         Parameters
         ----------

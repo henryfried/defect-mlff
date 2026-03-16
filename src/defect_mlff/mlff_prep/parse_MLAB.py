@@ -71,7 +71,7 @@ class ParseAimstoMACE:
         for i, struct in enumerate(self.structures):
             at = adaptor.get_atoms(struct)
             if self.forces_all and self.forces_all[i] is not None:
-                at.arrays["forces"] = np.array(self.forces_all[i])  # eV/Å expected by MACE
+                at.arrays["forces"] = np.array(self.forces_all[i])  # eV/Ang expected by MACE
             if self.energies_all and self.energies_all[i] is not None:
                 at.info["energy"] = float(self.energies_all[i])     # eV
             images.append(at)

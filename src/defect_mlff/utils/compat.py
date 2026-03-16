@@ -9,12 +9,12 @@ def apply_mace_compat_patch() -> None:
     Compatibility shim for loading MACE / MACE-Field models across versions.
 
     Fixes three issues that arise depending on PyTorch and MACE version:
-    1. ``torch.serialization.add_safe_globals([slice])`` — newer PyTorch
+    1. ``torch.serialization.add_safe_globals([slice])`` - newer PyTorch
        defaults to ``weights_only=True`` which rejects ``slice`` objects
        embedded in model checkpoints.
-    2. ``models.ScaleShiftFieldMACE`` alias — some MACE versions renamed the
+    2. ``models.ScaleShiftFieldMACE`` alias - some MACE versions renamed the
        field model class; this registers the alias so older checkpoints load.
-    3. ``torch.load`` default ``weights_only=False`` — models serialised with
+    3. ``torch.load`` default ``weights_only=False`` - models serialised with
        older torch/pickle need this to deserialise correctly.
 
     Call once at the top of any script that loads a MACE model, before

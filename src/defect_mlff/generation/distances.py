@@ -10,7 +10,7 @@ def get_distances_by_bucket(defect_indices, struct):
     Parameters
     ----------
     defect_indices : List[List[int]]
-        defect_indices[i] is a list of site‐indices of defects of type i.
+        defect_indices[i] is a list of site-indices of defects of type i.
     struct : pymatgen Structure
         The structure to measure distances in.
 
@@ -19,7 +19,7 @@ def get_distances_by_bucket(defect_indices, struct):
     dists : Dict[(int, int), List[float]]
         For each pair (i, j) with i <= j, the sorted list of distances
         between each defect in group i and each defect in group j,
-        excluding any self‐comparisons (zero distances).
+        excluding any self-comparisons (zero distances).
     """
     lattice = struct.lattice
     dists = {}

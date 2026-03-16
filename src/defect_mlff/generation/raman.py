@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 
 log = logging.getLogger(__name__)
 
-THZ_TO_CM1 = 33.3564  # 1 THz = 33.3564 cm⁻¹
+THZ_TO_CM1 = 33.3564  # 1 THz = 33.3564 cm^-1
 
 
 class RamanModeSelector:
@@ -26,9 +26,9 @@ class RamanModeSelector:
     Estimate Raman activity per phonon mode and select modes for DFPT.
 
     Uses central finite differences of polarizability along each mass-weighted
-    eigenvector:  dα/dQ ≈ (α(+δ) - α(-δ)) / (2δ)
+    eigenvector:  dalpha/dQ ~ (alpha(+delta) - alpha(-delta)) / (2*delta)
 
-    Activity I_i ∝ |dα/dQ_i|²
+    Activity I_i ~ |dalpha/dQ_i|^2
 
     Parameters
     ----------
@@ -36,7 +36,7 @@ class RamanModeSelector:
         Callable ``(atoms) -> ndarray[6]`` returning the polarizability tensor
         components [xx, xy, xz, yy, yz, zz] for a given structure.
     delta : float
-        Finite-difference displacement amplitude in Å (default 0.01).
+        Finite-difference displacement amplitude in Ang (default 0.01).
     n_acoustic : int
         Number of acoustic modes to skip (default 3).
     """
@@ -62,7 +62,7 @@ class RamanModeSelector:
         Returns
         -------
         activities : ndarray, shape (n_optical,)
-            Raman activity estimate (sum of |dα/dQ|²) per optical mode.
+            Raman activity estimate (sum of |dalpha/dQ|^2) per optical mode.
         optical_indices : ndarray, shape (n_optical,)
             Indices into the full eigvec/freq arrays.
         dalpha : ndarray, shape (n_optical, 6)
@@ -122,7 +122,7 @@ class RamanModeSelector:
         min_modes, max_modes : int
             Hard lower/upper bounds on selected count.
         freq_min_cm1 : float
-            Minimum frequency in cm⁻¹ (default 50).
+            Minimum frequency in cm^-1 (default 50).
 
         Returns
         -------
@@ -137,7 +137,7 @@ class RamanModeSelector:
 
         if not np.any(freq_valid):
             log.warning(
-                "No optical modes above freq_min (%.1f cm⁻¹)", freq_min_cm1
+                "No optical modes above freq_min (%.1f cm^-1)", freq_min_cm1
             )
             return np.array([], dtype=int), np.array([], dtype=int)
 
@@ -224,10 +224,10 @@ class RamanModeSelector:
         with open(output_dir / f"{config_name}_selected_modes.json", "w") as f:
             json.dump(summary, f, indent=2)
 
-        log.info("%s — selected %d modes:", config_name, len(selected_mode_indices))
+        log.info("%s: selected %d modes:", config_name, len(selected_mode_indices))
         for m in mode_summary:
             log.info(
-                "  mode %4d  %7.1f cm⁻¹  activity=%.3e",
+                "  mode %4d  %7.1f cm^-1  activity=%.3e",
                 m["mode_index"], m["frequency_cm1"], m["raman_activity_estimate"],
             )
 

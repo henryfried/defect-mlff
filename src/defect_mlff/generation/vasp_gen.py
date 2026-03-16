@@ -232,7 +232,7 @@ class VaspInputs:
 #             dists = ast.literal_eval(dists)
 #         assert isinstance(dists, dict)
 
-#         # Turn tuple‐keys into JSON‐safe strings
+#         # Turn tuple-keys into JSON-safe strings
 #         jsonable = { str(k): v for k, v in dists.items() }
 
 #         out = os.path.join(out_path, "distance.json")
